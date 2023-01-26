@@ -5,18 +5,17 @@
 package frc.robot;
 
 import edu.wpi.first.wpilibj.TimedRobot;
-import edu.wpi.first.wpilibj.XboxController;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.InstantCommand;
 import edu.wpi.first.wpilibj2.command.StartEndCommand;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
-import edu.wpi.first.wpilibj2.command.button.JoystickButton;
 import edu.wpi.first.math.filter.SlewRateLimiter;
 import com.ctre.phoenix.motorcontrol.ControlMode;
 import com.ctre.phoenix.motorcontrol.NeutralMode;
 import com.ctre.phoenix.motorcontrol.TalonFXControlMode;
 import com.ctre.phoenix.motorcontrol.can.TalonFX;
 import com.ctre.phoenix.motorcontrol.can.WPI_TalonFX;
+import com.ctre.phoenix.motorcontrol.can.WPI_TalonSRX;
 
 /**
  * This sample program shows how to control a motor using a joystick. In the
@@ -34,15 +33,16 @@ import com.ctre.phoenix.motorcontrol.can.WPI_TalonFX;
  * to the Dashboard.
  */
 public class Robot extends TimedRobot {
-  SlewRateLimiter filter = new SlewRateLimiter(.5, -0.5, .1);
-
+  SlewRateLimiter filter = new SlewRateLimiter(.5, -0.5, .2);
+  private WPI_TalonSRX talonSRX = new WPI_TalonSRX(4);
   private WPI_TalonFX talonFX = new WPI_TalonFX(1);
   private CommandXboxController m_XboxController = new CommandXboxController(0);
+  boolean toggle = false;
 
   @Override
   public void robotInit() {
     // configureButtonBindings();
-
+    talonSRX.setNeutralMode(NeutralMode.Coast);
   }
 
   /*
@@ -56,11 +56,24 @@ public class Robot extends TimedRobot {
   @Override
   public void teleopPeriodic() {
     if (m_XboxController.getHID().getAButton()) {
-      talonFX.set(filter.calculate(0.5));
-    } else if (m_XboxController.getHID().getBButton()) {
-      talonFX.set(filter.calculate(-0.5));
-    } else {
-      talonFX.set(filter.calculate(0));
+      talonSRX.set(0.5);
+    } 
+    
+    else if (m_XboxController.getHID().getBButton()) {
+      talonSRX.set(-0.5);
+    }
+      else if (m_XboxController.getHID().getYButton()){
+        if(toggle) {
+          talonSRX.set(0.4);
+          toggle = false;
+        }
+          else { 
+            talonSRX.set(0.4);
+            toggle = true;
+          }
+      }
+   else {
+      talonSRX.set(0);
     }
   }
 }
